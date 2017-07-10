@@ -18,14 +18,21 @@ internal protocol UIApplicationProtocol {
 
 extension UIApplication: UIApplicationProtocol {}
 
-public final class Localide {
+public final class Localide: NSObject {
 
     public static let sharedManager: Localide = Localide()
     internal var applicationProtocol: UIApplicationProtocol = UIApplication.shared
 
+    public var actionSheetTitleText: String?
+    public var actionSheetMesaageText: String?
+    public var actionSheetDismissText: String?
+    
+    
+    public var subsetOfApps: [LocalideMapApp]?
+    
     // Unavailable initializer, use sharedManager.
-    fileprivate init() {
-
+    fileprivate override init() {
+        super.init()
     }
 
     /**
@@ -55,14 +62,13 @@ public final class Localide {
      Prompt user for their preferred maps app, and launch it with directions to location
      - parameter location: Latitude & Longitude of the direction's to location
      - parameter rememberPreference: Whether to remember the user's preference for future uses or not. (note: preference is reset whenever the list of available apps change. ex. user installs a new map app.)
-     - parameter usingASubsetOfApps: Handpicked subset of apps to use, use this parameter if you'd like to exclude some apps. (note: If none of which are available, Apple Maps will be fell back on.)
      - parameter completion: Called after attempting to launch app whether it being from previous preference or currently selected preference.
      */
-    public func promptForDirections(toLocation location: CLLocationCoordinate2D, rememberPreference remember: Bool = false, usingASubsetOfApps apps: [LocalideMapApp]? = nil, onCompletion completion: LocalideUsageCompletion?) {
+    public func promptForDirections(toLocation location: CLLocationCoordinate2D, rememberPreference remember: Bool = false, onCompletion completion: LocalideUsageCompletion?) {
         
         var appChoices = self.availableMapApps
-        if let apps = apps {
-            appChoices = apps.filter({ self.availableMapApps.contains($0) })
+        if let subsetOfApps = self.subsetOfApps {
+            appChoices = subsetOfApps.filter({ self.availableMapApps.contains($0) })
             if appChoices.count == 0 {
                 appChoices = [.appleMaps]
             }
@@ -74,7 +80,7 @@ public final class Localide {
             return
         }
 
-        self.discoverUserPreferenceOfMapApps("Navigation", message: "Which app would you like to use for directions?", apps: appChoices) { app in
+        self.discoverUserPreferenceOfMapApps(withTitle: self.actionSheetTitleText ?? "Navigation", message: self.actionSheetMesaageText ?? "Which app would you like to use for directions?", apps: appChoices) { app in
             if remember {
                 UserDefaults.setPreferredMapApp(app, fromMapAppChoices: appChoices)
             }
@@ -82,11 +88,11 @@ public final class Localide {
         }
     }
     
-    public func promptForDirections(toAddress address: String, fallbackCoordinates: CLLocationCoordinate2D , rememberPreference remember: Bool = false, usingASubsetOfApps apps: [LocalideMapApp]? = nil, onCompletion completion: LocalideUsageCompletion?) {
+    public func promptForDirections(toAddress address: String, fallbackCoordinates: CLLocationCoordinate2D , rememberPreference remember: Bool = false, onCompletion completion: LocalideUsageCompletion?) {
         
         var appChoices = self.availableMapApps
-        if let apps = apps {
-            appChoices = apps.filter({ self.availableMapApps.contains($0) })
+        if let subsetOfApps = self.subsetOfApps {
+            appChoices = subsetOfApps.filter({ self.availableMapApps.contains($0) })
             if appChoices.count == 0 {
                 appChoices = [.appleMaps]
             }
@@ -110,8 +116,7 @@ public final class Localide {
             return
         }
         
-        self.discoverUserPreferenceOfMapApps("Navigation", message: "Which app would you like to use for directions?", apps: appChoices) { app in
-            if remember {
+        self.discoverUserPreferenceOfMapApps(withTitle: self.actionSheetTitleText ?? "Navigation", message: self.actionSheetMesaageText ?? "Which app would you like to use for directions?", apps: appChoices) { app in            if remember {
                 UserDefaults.setPreferredMapApp(app, fromMapAppChoices: appChoices)
             }
             
@@ -144,25 +149,25 @@ extension Localide {
         completion?(app, fromMemory, didLaunchMapApp)
     }
 
-    fileprivate func discoverUserPreferenceOfMapApps(_ title: String, message: String, apps: [LocalideMapApp], completion: @escaping (LocalideMapApp) -> Void) {
+    fileprivate func discoverUserPreferenceOfMapApps(withTitle title: String, message: String, apps: [LocalideMapApp], completion: @escaping (LocalideMapApp) -> Void) {
         guard apps.count > 1 else {
             if let app = apps.first {
                 completion(app)
             }
             return
         }
-
-        let alertController = UIAlertController(title: title, message: message, preferredStyle: UIAlertControllerStyle.actionSheet)
-
+        
+        let alertController = UIAlertController(title: title, message: message, preferredStyle: .actionSheet)
+        
         for app in apps {
-            let alertAction = UIAlertAction.localideAction(withTitle: app.appName, style: UIAlertActionStyle.default, handler: { _ in completion(app) })
+            let alertAction = UIAlertAction.localideAction(withTitle: app.appName, style: .default, handler: { _ in completion(app) })
             alertAction.mockMapApp = app
             alertController.addAction(alertAction)
         }
-
-        let cancelAction = UIAlertAction(title: "Cancel", style: UIAlertActionStyle.cancel, handler: nil)
+        
+        let cancelAction = UIAlertAction(title: self.actionSheetDismissText ?? "Cancel", style: .cancel, handler: nil)
         alertController.addAction(cancelAction)
-
+        
         UIApplication.topViewController()?.present(alertController, animated: true, completion: nil)
     }
 }
