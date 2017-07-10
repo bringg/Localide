@@ -50,12 +50,33 @@ public extension LocalideMapApp {
         guard let url = URL(string: LocalideMapApp.prefixes[self]!) else { return false }
         return LocalideMapApp.canOpenUrl(url)
     }
+    
+    public func canNavigateByAddress() -> Bool {
+        guard let _ = LocalideMapApp.addressUrlFormats[self] else {
+            return false
+        }
+        
+        return true
+    }
+    
     /**
      Launch app
      - returns: Whether the launch of the application was successfull
      */
-    public func launchApp() -> Bool {
-        return LocalideMapApp.launchAppWithUrlString(LocalideMapApp.urlFormats[self]!)
+    public func launchApp(byCoordinates:Bool = true) -> Bool {
+        
+        if byCoordinates {
+            return LocalideMapApp.launchAppWithUrlString(LocalideMapApp.urlFormats[self]!)
+        }else{
+            // not all map apps can launch by address so fallback to normal url formats
+            if let format = LocalideMapApp.addressUrlFormats[self] {
+                return LocalideMapApp.launchAppWithUrlString(format)
+            }else{
+                return LocalideMapApp.launchAppWithUrlString(LocalideMapApp.urlFormats[self]!)
+            }
+        }
+        
+        
     }
     /**
      Launch app with directions to location
@@ -65,12 +86,31 @@ public extension LocalideMapApp {
     @discardableResult public func launchAppWithDirections(toLocation location: CLLocationCoordinate2D) -> Bool {
         return LocalideMapApp.launchAppWithUrlString(urlStringForDirections(toLocation: location))
     }
+    
+    
+    @discardableResult public func launchAppWithDirections(toAddress address: String) -> Bool {
+        let urlstring = urlStringForDirections(toAddress: address)
+        if urlstring.isEmpty {
+            return false
+        }
+        return LocalideMapApp.launchAppWithUrlString(urlstring)
+    }
 }
+
 
 // MARK: - Private Helpers
 private extension LocalideMapApp {
     func urlStringForDirections(toLocation location: CLLocationCoordinate2D) -> String {
         return String(format: LocalideMapApp.urlFormats[self]!, arguments: [location.latitude, location.longitude])
+    }
+    
+    func urlStringForDirections(toAddress address: String) -> String {
+        
+        guard let format = LocalideMapApp.addressUrlFormats[self] else {
+            return ""
+        }
+        
+        return String(format: format, arguments: [address])
     }
 }
 
@@ -95,6 +135,16 @@ private extension LocalideMapApp {
         LocalideMapApp.transitApp : "transit://routes?q=%f,%f",
         LocalideMapApp.waze : "waze://?ll=%f,%f",
         LocalideMapApp.yandexNavigator : "yandexnavi://build_route_on_map?lat_to=%f&lon_to=%f"
+    ]
+    
+    static let addressUrlFormats: [LocalideMapApp: String] = [
+        LocalideMapApp.appleMaps : "http://maps.apple.com/?daddr=%@",
+        LocalideMapApp.citymapper : "citymapper://endaddress=%@",
+        LocalideMapApp.googleMaps : "comgooglemaps://?daddr=%@&directionsmode=driving",
+        LocalideMapApp.transitApp : "transit://directions?to=%@",
+        LocalideMapApp.waze : "waze://?q=%@"
+        //LocalideMapApp.navigon : "navigon://coordinate/Destination/%f/%f",
+        //LocalideMapApp.yandexNavigator : "yandexnavi://build_route_on_map?lat_to=%f&lon_to=%f"
     ]
 
     static func canOpenUrl(_ url: URL) -> Bool {

@@ -81,6 +81,48 @@ public final class Localide {
             self.launchApp(app, withDirectionsToLocation: location, fromMemory: false, completion: completion)
         }
     }
+    
+    public func promptForDirections(toAddress address: String, fallbackCoordinates: CLLocationCoordinate2D , rememberPreference remember: Bool = false, usingASubsetOfApps apps: [LocalideMapApp]? = nil, onCompletion completion: LocalideUsageCompletion?) {
+        
+        var appChoices = self.availableMapApps
+        if let apps = apps {
+            appChoices = apps.filter({ self.availableMapApps.contains($0) })
+            if appChoices.count == 0 {
+                appChoices = [.appleMaps]
+            }
+        }
+        
+        // for navigation by address we need to escape the address (if we cant we will just replace spaces with +)
+        let escapedAddress = address.stringByAddingPercentEncodingForRFC3986() ?? address.replacingOccurrences(of: " ", with: "+")
+        
+
+        // some map apps currently dont support navigation by address - in this case fallback to "by-location" navigation
+        guard !remember || !UserDefaults.didSetPrefferedMapApp(fromChoices: appChoices) else {
+            let preferredMapApp = UserDefaults.preferredMapApp(fromChoices: appChoices)!
+
+            if preferredMapApp.canNavigateByAddress() {
+                self.launchApp(preferredMapApp, withDirectionsToAddress: escapedAddress, fromMemory: true, completion: completion)
+            }else{
+                self.launchApp(preferredMapApp, withDirectionsToLocation: fallbackCoordinates, fromMemory: true, completion: completion)
+            }
+            
+            
+            return
+        }
+        
+        self.discoverUserPreferenceOfMapApps("Navigation", message: "Which app would you like to use for directions?", apps: appChoices) { app in
+            if remember {
+                UserDefaults.setPreferredMapApp(app, fromMapAppChoices: appChoices)
+            }
+            
+            if app.canNavigateByAddress() {
+                self.launchApp(app, withDirectionsToAddress: escapedAddress, fromMemory: false, completion: completion)
+            }else{
+                self.launchApp(app, withDirectionsToLocation: fallbackCoordinates, fromMemory: false, completion: completion)
+            }
+                    
+        }
+    }
 }
 
 // MARK: - Private Helpers
@@ -94,6 +136,11 @@ extension Localide {
 
     fileprivate func launchApp(_ app: LocalideMapApp, withDirectionsToLocation location: CLLocationCoordinate2D, fromMemory: Bool, completion: LocalideUsageCompletion?) {
         let didLaunchMapApp = app.launchAppWithDirections(toLocation: location)
+        completion?(app, fromMemory, didLaunchMapApp)
+    }
+    
+    fileprivate func launchApp(_ app: LocalideMapApp, withDirectionsToAddress address: String, fromMemory: Bool, completion: LocalideUsageCompletion?) {
+        let didLaunchMapApp = app.launchAppWithDirections(toAddress: address)
         completion?(app, fromMemory, didLaunchMapApp)
     }
 
@@ -117,5 +164,14 @@ extension Localide {
         alertController.addAction(cancelAction)
 
         UIApplication.topViewController()?.present(alertController, animated: true, completion: nil)
+    }
+}
+
+extension String {
+    func stringByAddingPercentEncodingForRFC3986() -> String? {
+        let unreserved = "-._~/?"
+        var allowed = CharacterSet.alphanumerics
+        allowed.insert(charactersIn: unreserved)
+        return self.addingPercentEncoding(withAllowedCharacters: allowed)
     }
 }
