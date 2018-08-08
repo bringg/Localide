@@ -8,10 +8,12 @@
 
 import Foundation
 
-internal extension UserDefaults {
+extension UserDefaults {
+    public static let PreferredMapAppKey = "Localide.Preferred-Map-App"
+    public static let MapAppChoicesKey = "Localide.Installed-Map-Apps"
+}
 
-    fileprivate static let PreferredMapAppKey = "Localide.Preferred-Map-App"
-    fileprivate static let MapAppChoicesKey = "Localide.Installed-Map-Apps"
+internal extension UserDefaults {
 
     internal class func didSetPrefferedMapApp(fromChoices choices: [LocalideMapApp]) -> Bool {
         return (self.preferredMapApp(fromChoices: choices) != nil)
