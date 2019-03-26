@@ -134,7 +134,7 @@ public final class Localide: NSObject {
 extension Localide {
 
     fileprivate class func installedMapApps() -> [LocalideMapApp] {
-        return LocalideMapApp.AllMapApps.flatMap({ mapApp in
+        return LocalideMapApp.AllMapApps.compactMap({ mapApp in
             return mapApp.canOpenApp() ? mapApp : nil
         })
     }
