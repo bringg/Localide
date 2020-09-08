@@ -20,7 +20,6 @@
 		3A91531E1DBB4DE3008E5B80 /* LocalideAlertAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A9153191DBB4DE3008E5B80 /* LocalideAlertAction.swift */; };
 		3A91531F1DBB4DE3008E5B80 /* LocalideMapApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A91531A1DBB4DE3008E5B80 /* LocalideMapApp.swift */; };
 		3A9153201DBB4DE3008E5B80 /* NSUserDetauls+Localide.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A91531B1DBB4DE3008E5B80 /* NSUserDetauls+Localide.swift */; };
-		3A9153211DBB4DE3008E5B80 /* UIApplication+Localide.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A91531C1DBB4DE3008E5B80 /* UIApplication+Localide.swift */; };
 		62E7590E25065E90002A1AD9 /* MapKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 62E7590D25065E90002A1AD9 /* MapKit.framework */; };
 /* End PBXBuildFile section */
 
@@ -73,7 +72,6 @@
 		3A9153191DBB4DE3008E5B80 /* LocalideAlertAction.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocalideAlertAction.swift; sourceTree = "<group>"; };
 		3A91531A1DBB4DE3008E5B80 /* LocalideMapApp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocalideMapApp.swift; sourceTree = "<group>"; };
 		3A91531B1DBB4DE3008E5B80 /* NSUserDetauls+Localide.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NSUserDetauls+Localide.swift"; sourceTree = "<group>"; };
-		3A91531C1DBB4DE3008E5B80 /* UIApplication+Localide.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIApplication+Localide.swift"; sourceTree = "<group>"; };
 		62E7590D25065E90002A1AD9 /* MapKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MapKit.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/System/Library/Frameworks/MapKit.framework; sourceTree = DEVELOPER_DIR; };
 /* End PBXFileReference section */
 
@@ -164,7 +162,6 @@
 				3A9153191DBB4DE3008E5B80 /* LocalideAlertAction.swift */,
 				3A91531A1DBB4DE3008E5B80 /* LocalideMapApp.swift */,
 				3A91531B1DBB4DE3008E5B80 /* NSUserDetauls+Localide.swift */,
-				3A91531C1DBB4DE3008E5B80 /* UIApplication+Localide.swift */,
 			);
 			path = Classes;
 			sourceTree = "<group>";
@@ -344,7 +341,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				3A91531D1DBB4DE3008E5B80 /* Localide.swift in Sources */,
-				3A9153211DBB4DE3008E5B80 /* UIApplication+Localide.swift in Sources */,
 				3A9153201DBB4DE3008E5B80 /* NSUserDetauls+Localide.swift in Sources */,
 				3A91531E1DBB4DE3008E5B80 /* LocalideAlertAction.swift in Sources */,
 				3A91531F1DBB4DE3008E5B80 /* LocalideMapApp.swift in Sources */,

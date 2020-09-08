@@ -64,7 +64,7 @@ public final class Localide: NSObject {
      - parameter rememberPreference: Whether to remember the user's preference for future uses or not. (note: preference is reset whenever the list of available apps change. ex. user installs a new map app.)
      - parameter completion: Called after attempting to launch app whether it being from previous preference or currently selected preference.
      */
-    public func promptForDirections(toLocation location: CLLocationCoordinate2D, rememberPreference remember: Bool = false, presentingViewController: UIViewController?, onCompletion completion: LocalideUsageCompletion?) {
+    public func promptForDirections(toLocation location: CLLocationCoordinate2D, rememberPreference remember: Bool = false, presentingViewController: UIViewController, onCompletion completion: LocalideUsageCompletion?) {
         
         var appChoices = self.availableMapApps
         if let subsetOfApps = self.subsetOfApps {
@@ -88,7 +88,7 @@ public final class Localide: NSObject {
         }
     }
     
-    public func promptForDirections(toAddress address: String, fallbackCoordinates: CLLocationCoordinate2D , rememberPreference remember: Bool = false, presentingViewController: UIViewController?, onCompletion completion: LocalideUsageCompletion?) {
+    public func promptForDirections(toAddress address: String, fallbackCoordinates: CLLocationCoordinate2D , rememberPreference remember: Bool = false, presentingViewController: UIViewController, onCompletion completion: LocalideUsageCompletion?) {
         
         var appChoices = self.availableMapApps
         if let subsetOfApps = self.subsetOfApps {
@@ -150,7 +150,7 @@ extension Localide {
         completion?(app, fromMemory, didLaunchMapApp)
     }
     
-    fileprivate func discoverUserPreferenceOfMapApps(withTitle title: String, message: String, apps: [LocalideMapApp], presentingViewController: UIViewController?, completion: @escaping (LocalideMapApp) -> Void) {
+    fileprivate func discoverUserPreferenceOfMapApps(withTitle title: String, message: String, apps: [LocalideMapApp], presentingViewController: UIViewController, completion: @escaping (LocalideMapApp) -> Void) {
         guard apps.count > 1 else {
             if let app = apps.first {
                 completion(app)
@@ -168,12 +168,7 @@ extension Localide {
         
         let cancelAction = UIAlertAction(title: self.actionSheetDismissText ?? "Cancel", style: .cancel, handler: nil)
         alertController.addAction(cancelAction)
-        if let presentingViewController = presentingViewController {
-            presentingViewController.present(alertController, animated: true, completion: nil)
-        } else {
-            UIApplication.topViewController()?.present(alertController, animated: true, completion: nil)
-        }
-        
+        presentingViewController.present(alertController, animated: true, completion: nil)
     }
 }
 
