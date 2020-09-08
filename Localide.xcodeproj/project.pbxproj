@@ -20,7 +20,7 @@
 		3A91531E1DBB4DE3008E5B80 /* LocalideAlertAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A9153191DBB4DE3008E5B80 /* LocalideAlertAction.swift */; };
 		3A91531F1DBB4DE3008E5B80 /* LocalideMapApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A91531A1DBB4DE3008E5B80 /* LocalideMapApp.swift */; };
 		3A9153201DBB4DE3008E5B80 /* NSUserDetauls+Localide.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A91531B1DBB4DE3008E5B80 /* NSUserDetauls+Localide.swift */; };
-		3A9153211DBB4DE3008E5B80 /* UIApplication+Localide.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A91531C1DBB4DE3008E5B80 /* UIApplication+Localide.swift */; };
+		62E7590E25065E90002A1AD9 /* MapKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 62E7590D25065E90002A1AD9 /* MapKit.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -72,7 +72,7 @@
 		3A9153191DBB4DE3008E5B80 /* LocalideAlertAction.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocalideAlertAction.swift; sourceTree = "<group>"; };
 		3A91531A1DBB4DE3008E5B80 /* LocalideMapApp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocalideMapApp.swift; sourceTree = "<group>"; };
 		3A91531B1DBB4DE3008E5B80 /* NSUserDetauls+Localide.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NSUserDetauls+Localide.swift"; sourceTree = "<group>"; };
-		3A91531C1DBB4DE3008E5B80 /* UIApplication+Localide.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIApplication+Localide.swift"; sourceTree = "<group>"; };
+		62E7590D25065E90002A1AD9 /* MapKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MapKit.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/System/Library/Frameworks/MapKit.framework; sourceTree = DEVELOPER_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -88,6 +88,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				62E7590E25065E90002A1AD9 /* MapKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -108,6 +109,7 @@
 				0C31841A1CFD1A6E00F16B00 /* LocalideTests */,
 				3A9153011DBB471C008E5B80 /* Localide */,
 				0C3184041CFD1A6E00F16B00 /* Products */,
+				62E7590C25065E8F002A1AD9 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -160,9 +162,16 @@
 				3A9153191DBB4DE3008E5B80 /* LocalideAlertAction.swift */,
 				3A91531A1DBB4DE3008E5B80 /* LocalideMapApp.swift */,
 				3A91531B1DBB4DE3008E5B80 /* NSUserDetauls+Localide.swift */,
-				3A91531C1DBB4DE3008E5B80 /* UIApplication+Localide.swift */,
 			);
 			path = Classes;
+			sourceTree = "<group>";
+		};
+		62E7590C25065E8F002A1AD9 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				62E7590D25065E90002A1AD9 /* MapKit.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -246,6 +255,7 @@
 				TargetAttributes = {
 					0C3184021CFD1A6E00F16B00 = {
 						CreatedOnToolsVersion = 7.3.1;
+						DevelopmentTeam = DFU7J6YQP9;
 						LastSwiftMigration = 0800;
 					};
 					0C3184161CFD1A6E00F16B00 = {
@@ -265,6 +275,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 				Base,
 			);
@@ -330,7 +341,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				3A91531D1DBB4DE3008E5B80 /* Localide.swift in Sources */,
-				3A9153211DBB4DE3008E5B80 /* UIApplication+Localide.swift in Sources */,
 				3A9153201DBB4DE3008E5B80 /* NSUserDetauls+Localide.swift in Sources */,
 				3A91531E1DBB4DE3008E5B80 /* LocalideAlertAction.swift in Sources */,
 				3A91531F1DBB4DE3008E5B80 /* LocalideMapApp.swift in Sources */,
@@ -467,12 +477,13 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = DFU7J6YQP9;
 				INFOPLIST_FILE = LocalideDemo/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = davidelsonbaty.LocalideDemo;
+				PRODUCT_BUNDLE_IDENTIFIER = com.bringg.davidelsonbaty.LocalideDemo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 3.0;
+				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
 		};
@@ -481,12 +492,13 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = DFU7J6YQP9;
 				INFOPLIST_FILE = LocalideDemo/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = davidelsonbaty.LocalideDemo;
+				PRODUCT_BUNDLE_IDENTIFIER = com.bringg.davidelsonbaty.LocalideDemo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 3.0;
+				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
 		};
@@ -499,8 +511,8 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.davidelsonbaty.LocalideTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 3.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Localide.app/Localide";
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/LocalideDemo.app/LocalideDemo";
 			};
 			name = Debug;
 		};
@@ -513,8 +525,8 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.davidelsonbaty.LocalideTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 3.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Localide.app/Localide";
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/LocalideDemo.app/LocalideDemo";
 			};
 			name = Release;
 		};

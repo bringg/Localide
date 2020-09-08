@@ -33,8 +33,8 @@ class LocalideTests: XCTestCase {
     }
 
     func testPromptForDirectionsNoOptions() {
-
-        Localide.sharedManager.promptForDirections(toLocation: locationZero, usingASubsetOfApps: []) { (usedApp, fromMemory, openedLinkSuccessfully) in
+        Localide.sharedManager.subsetOfApps = []
+        Localide.sharedManager.promptForDirections(toLocation: locationZero) { (usedApp, fromMemory, openedLinkSuccessfully) in
             XCTAssertEqual(LocalideMapApp.appleMaps, usedApp)
             XCTAssertFalse(fromMemory)
             XCTAssertTrue(openedLinkSuccessfully)
@@ -48,8 +48,8 @@ class LocalideTests: XCTestCase {
     }
 
     func testPromptForDirectionsOneOption() {
-
-        Localide.sharedManager.promptForDirections(toLocation: locationZero, usingASubsetOfApps: [.googleMaps]) { (usedApp, fromMemory, openedLinkSuccessfully) in
+        Localide.sharedManager.subsetOfApps = [.googleMaps]
+        Localide.sharedManager.promptForDirections(toLocation: locationZero) { (usedApp, fromMemory, openedLinkSuccessfully) in
             XCTAssertEqual(LocalideMapApp.googleMaps, usedApp)
             XCTAssertFalse(fromMemory)
             XCTAssertTrue(openedLinkSuccessfully)
@@ -79,7 +79,7 @@ class LocalideTests: XCTestCase {
         resetViewHierarchy()
     }
 
-    func testPromptForDirectionsWithMemory() {
+    func testPromptForDirectionsWithMemory() throws {
         Localide.sharedManager.resetUserPreferences()
 
         var lastSelectedApp: LocalideMapApp?
@@ -90,16 +90,15 @@ class LocalideTests: XCTestCase {
             XCTAssertEqual(self.applicationProtocolTest.lastOpenedUrl, self.testDidLaunchApplication(usedApp))
         }
 
-        let actions = currentAlertActions()
-        XCTAssertNotNil(actions)
-        for action in actions! {
+        let actions = try XCTUnwrap(currentAlertActions())
+        for action in actions {
             lastSelectedApp = action.mockMapApp
             action.mockHandler!(action)
         }
 
         resetViewHierarchy()
 
-        let appFromMemory: LocalideMapApp = actions!.last!.mockMapApp!
+        let appFromMemory: LocalideMapApp = actions.last!.mockMapApp!
         Localide.sharedManager.promptForDirections(toLocation: locationZero, rememberPreference: true) { (usedApp, fromMemory, openedLinkSuccessfully) in
             XCTAssertEqual(appFromMemory, usedApp)
             XCTAssertTrue(fromMemory)
@@ -111,7 +110,7 @@ class LocalideTests: XCTestCase {
         XCTAssertEqual(applicationProtocolTest.lastOpenedUrl, testDidLaunchApplication(appFromMemory))
     }
 
-    func testPromptForDirectionsWithMemoryAndChangeOfAvailability() {
+    func testPromptForDirectionsWithMemoryAndChangeOfAvailability() throws {
         Localide.sharedManager.resetUserPreferences()
 
         var lastSelectedApp: LocalideMapApp?
@@ -122,16 +121,16 @@ class LocalideTests: XCTestCase {
             XCTAssertEqual(self.applicationProtocolTest.lastOpenedUrl, self.testDidLaunchApplication(usedApp))
         }
 
-        let actions = currentAlertActions()
+        let actions = try XCTUnwrap(currentAlertActions())
         XCTAssertNotNil(actions)
-        for action in actions! {
+        for action in actions {
             lastSelectedApp = action.mockMapApp
             action.mockHandler!(action)
         }
 
         resetViewHierarchy()
-
-        Localide.sharedManager.promptForDirections(toLocation: locationZero, rememberPreference: true, usingASubsetOfApps: [.googleMaps, .waze]) { (usedApp, fromMemory, openedLinkSuccessfully) in
+        Localide.sharedManager.subsetOfApps = [.googleMaps, .waze]
+        Localide.sharedManager.promptForDirections(toLocation: locationZero, rememberPreference: true) { (usedApp, fromMemory, openedLinkSuccessfully) in
             XCTAssertEqual(lastSelectedApp, usedApp)
             XCTAssertFalse(fromMemory)
             XCTAssertTrue(openedLinkSuccessfully)

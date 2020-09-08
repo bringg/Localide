@@ -36,7 +36,7 @@ class ViewController: UIViewController {
         self.mapView.addGestureRecognizer(tapGestureRecognizer)
     }
 
-    func didTapMapView(withTapGesture gesture: UITapGestureRecognizer) {
+    @objc func didTapMapView(withTapGesture gesture: UITapGestureRecognizer) {
         let gestureLocation = gesture.location(in: self.mapView)
         let gestureCoordinate = self.mapView.convert(gestureLocation, toCoordinateFrom: self.mapView)
         self.handleLocalideAction(withCoordinate: gestureCoordinate)
@@ -48,7 +48,7 @@ class ViewController: UIViewController {
         if self.promptSwitch.isOn {
 
             let promptFunction = {
-                Localide.sharedManager.promptForDirections(toLocation: location, rememberPreference: self.rememberSwitch.isOn, onCompletion: { (usedApp, fromMemory, openedLinkSuccessfully) in
+                Localide.sharedManager.promptForDirections(toLocation: location, rememberPreference: self.rememberSwitch.isOn, presentingViewController: self, onCompletion: { (usedApp, fromMemory, openedLinkSuccessfully) in
                     if fromMemory {
                         print("Localide used \(usedApp) from user's previous choice.")
                     } else {
