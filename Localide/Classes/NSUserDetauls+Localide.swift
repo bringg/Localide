@@ -15,11 +15,11 @@ extension UserDefaults {
 
 internal extension UserDefaults {
 
-    internal class func didSetPrefferedMapApp(fromChoices choices: [LocalideMapApp]) -> Bool {
+    class func didSetPrefferedMapApp(fromChoices choices: [LocalideMapApp]) -> Bool {
         return (self.preferredMapApp(fromChoices: choices) != nil)
     }
 
-    internal class func preferredMapApp(fromChoices choices: [LocalideMapApp]) -> LocalideMapApp? {
+    class func preferredMapApp(fromChoices choices: [LocalideMapApp]) -> LocalideMapApp? {
         // Ensure a preferred map app is set
         guard let preferredMapAppIndex = UserDefaults.standard.object(forKey: UserDefaults.PreferredMapAppKey) as? Int else { return nil }
         // Ensure there were no changes to the previous state of installed apps.
@@ -28,14 +28,14 @@ internal extension UserDefaults {
         return LocalideMapApp(rawValue: preferredMapAppIndex)
     }
 
-    internal class func setPreferredMapApp(_ app: LocalideMapApp, fromMapAppChoices choices: [LocalideMapApp]) {
+    class func setPreferredMapApp(_ app: LocalideMapApp, fromMapAppChoices choices: [LocalideMapApp]) {
         // Save the preferred map app
         UserDefaults.standard.set(app.rawValue, forKey: UserDefaults.PreferredMapAppKey)
         // Save the current state of map app choices
         UserDefaults.standard.set(choices.map({ $0.rawValue }), forKey: UserDefaults.MapAppChoicesKey)
     }
 
-    internal class func resetMapAppPreferences() {
+    class func resetMapAppPreferences() {
         UserDefaults.standard.removeObject(forKey: UserDefaults.PreferredMapAppKey)
         UserDefaults.standard.removeObject(forKey: UserDefaults.MapAppChoicesKey)
     }

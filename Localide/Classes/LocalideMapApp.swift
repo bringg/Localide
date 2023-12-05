@@ -46,12 +46,12 @@ public extension LocalideMapApp {
      Checks whether it is possible to launch the app. (Installed & Added to QuerySchemes)
      - returns: Whether it is possible to launch the app.
      */
-    public func canOpenApp() -> Bool {
+    func canOpenApp() -> Bool {
         guard let url = URL(string: LocalideMapApp.prefixes[self]!) else { return false }
         return LocalideMapApp.canOpenUrl(url)
     }
     
-    public func canNavigateByAddress() -> Bool {
+    func canNavigateByAddress() -> Bool {
         guard let _ = LocalideMapApp.addressUrlFormats[self] else {
             return false
         }
@@ -63,7 +63,7 @@ public extension LocalideMapApp {
      Launch app
      - returns: Whether the launch of the application was successfull
      */
-    public func launchApp(byCoordinates:Bool = true) -> Bool {
+    func launchApp(byCoordinates:Bool = true) -> Bool {
         
         if byCoordinates {
             return LocalideMapApp.launchAppWithUrlString(LocalideMapApp.urlFormats[self]!)
@@ -83,12 +83,12 @@ public extension LocalideMapApp {
      - parameter location: Latitude & Longitude of the directions's TO location
      - returns: Whether the launch of the application was successfull
      */
-    @discardableResult public func launchAppWithDirections(toLocation location: CLLocationCoordinate2D) -> Bool {
+    @discardableResult func launchAppWithDirections(toLocation location: CLLocationCoordinate2D) -> Bool {
         return LocalideMapApp.launchAppWithUrlString(urlStringForDirections(toLocation: location))
     }
     
     
-    @discardableResult public func launchAppWithDirections(toAddress address: String) -> Bool {
+    @discardableResult func launchAppWithDirections(toAddress address: String) -> Bool {
         let urlstring = urlStringForDirections(toAddress: address)
         if urlstring.isEmpty {
             return false
