@@ -17,6 +17,7 @@ import CoreLocation
     case transitApp = 50
     case waze = 60
     case yandexNavigator = 70
+    case copilot = 80
 
     public var appName: String {
         switch self {
@@ -34,6 +35,8 @@ import CoreLocation
             return "Waze"
         case .yandexNavigator:
             return "Yandex Navigator"
+        case .copilot:
+            return "CoPilot"
         }
     }
 
@@ -61,7 +64,7 @@ public extension LocalideMapApp {
     
     /**
      Launch app
-     - returns: Whether the launch of the application was successfull
+     - returns: Whether the launch of the application was successful
      */
     func launchApp(byCoordinates:Bool = true) -> Bool {
         
@@ -95,6 +98,22 @@ public extension LocalideMapApp {
         }
         return LocalideMapApp.launchAppWithUrlString(urlstring)
     }
+
+    static func launchAppWithUrlString(_ urlString: String) -> Bool {
+        guard let launchUrl = URL(string: urlString) , canOpenUrl(launchUrl) else { return false }
+        return Localide.sharedManager.applicationProtocol.openURL(launchUrl)
+    }
+
+    static let prefixes: [LocalideMapApp: String] = [
+        LocalideMapApp.appleMaps : "http://maps.apple.com/",
+        LocalideMapApp.citymapper : "citymapper://",
+        LocalideMapApp.googleMaps : "comgooglemaps://",
+        LocalideMapApp.navigon : "navigon://",
+        LocalideMapApp.transitApp : "transit://",
+        LocalideMapApp.waze : "waze://",
+        LocalideMapApp.yandexNavigator : "yandexnavi://",
+        LocalideMapApp.copilot : "copilot://"
+    ]
 }
 
 
@@ -116,16 +135,6 @@ private extension LocalideMapApp {
 
 // MARK: - Private Static Helpers
 private extension LocalideMapApp {
-
-    static let prefixes: [LocalideMapApp: String] = [
-        LocalideMapApp.appleMaps : "http://maps.apple.com/",
-        LocalideMapApp.citymapper : "citymapper://",
-        LocalideMapApp.googleMaps : "comgooglemaps://",
-        LocalideMapApp.navigon : "navigon://",
-        LocalideMapApp.transitApp : "transit://",
-        LocalideMapApp.waze : "waze://",
-        LocalideMapApp.yandexNavigator : "yandexnavi://"
-    ]
 
     static let urlFormats: [LocalideMapApp: String] = [
         LocalideMapApp.appleMaps : "http://maps.apple.com/?daddr=%f,%f",
@@ -149,10 +158,5 @@ private extension LocalideMapApp {
 
     static func canOpenUrl(_ url: URL) -> Bool {
         return Localide.sharedManager.applicationProtocol.canOpenURL(url)
-    }
-
-    static func launchAppWithUrlString(_ urlString: String) -> Bool {
-        guard let launchUrl = URL(string: urlString) , canOpenUrl(launchUrl) else { return false }
-        return Localide.sharedManager.applicationProtocol.openURL(launchUrl)
     }
 }

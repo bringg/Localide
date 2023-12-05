@@ -87,9 +87,15 @@ public final class Localide: NSObject {
             self.launchApp(app, withDirectionsToLocation: location, fromMemory: false, completion: completion)
         }
     }
-    
-    public func promptForDirections(toAddress address: String, fallbackCoordinates: CLLocationCoordinate2D , rememberPreference remember: Bool = false, presentingViewController: UIViewController, onCompletion completion: LocalideUsageCompletion?) {
-        
+
+    public func promptForDirections(
+        toAddress address: String,
+        fallbackCoordinates: CLLocationCoordinate2D,
+        rememberPreference remember: Bool = false,
+        presentingViewController: UIViewController,
+        customUrlsPerApp: [LocalideMapApp: String],
+        onCompletion completion: LocalideUsageCompletion?
+    ) {
         var appChoices = self.availableMapApps
         if let subsetOfApps = self.subsetOfApps {
             appChoices = subsetOfApps.filter({ self.availableMapApps.contains($0) })
@@ -97,36 +103,59 @@ public final class Localide: NSObject {
                 appChoices = [.appleMaps]
             }
         }
-        
+
         // for navigation by address we need to escape the address (if we cant we will just replace spaces with +)
         let escapedAddress = address.stringByAddingPercentEncodingForRFC3986() ?? address.replacingOccurrences(of: " ", with: "+")
-        
 
         // some map apps currently dont support navigation by address - in this case fallback to "by-location" navigation
         guard !remember || !UserDefaults.didSetPrefferedMapApp(fromChoices: appChoices) else {
             let preferredMapApp = UserDefaults.preferredMapApp(fromChoices: appChoices)!
-
-            if preferredMapApp.canNavigateByAddress() {
-                self.launchApp(preferredMapApp, withDirectionsToAddress: escapedAddress, fromMemory: true, completion: completion)
-            }else{
-                self.launchApp(preferredMapApp, withDirectionsToLocation: fallbackCoordinates, fromMemory: true, completion: completion)
-            }
-            
-            
+            self.launchApp(
+                preferredMapApp,
+                customUrlsPerApp: customUrlsPerApp,
+                escapedAddress: escapedAddress,
+                fallbackCoordinates: fallbackCoordinates,
+                fromMemory: true,
+                completion: completion
+            )
             return
         }
-        
+
         self.discoverUserPreferenceOfMapApps(withTitle: self.actionSheetTitleText ?? "Navigation", message: self.actionSheetMesaageText ?? "Which app would you like to use for directions?", apps: appChoices, presentingViewController: presentingViewController) { app in
             if remember {
                 UserDefaults.setPreferredMapApp(app, fromMapAppChoices: appChoices)
             }
-            
-            if app.canNavigateByAddress() {
-                self.launchApp(app, withDirectionsToAddress: escapedAddress, fromMemory: false, completion: completion)
-            }else{
-                self.launchApp(app, withDirectionsToLocation: fallbackCoordinates, fromMemory: false, completion: completion)
+            self.launchApp(
+                app,
+                customUrlsPerApp: customUrlsPerApp,
+                escapedAddress: escapedAddress,
+                fallbackCoordinates: fallbackCoordinates,
+                fromMemory: false,
+                completion: completion
+            )
+        }
+    }
+
+    private func launchApp(
+        _ app: LocalideMapApp,
+        customUrlsPerApp: [LocalideMapApp: String],
+        escapedAddress: String,
+        fallbackCoordinates: CLLocationCoordinate2D,
+        fromMemory: Bool,
+        completion: LocalideUsageCompletion?
+    ) {
+        if app == .copilot {
+            if let urlString = customUrlsPerApp[.copilot] {
+                _ = LocalideMapApp.launchAppWithUrlString(urlString)
+            } else if let copilotWithoutParams = LocalideMapApp.prefixes[.copilot] {
+                _ = LocalideMapApp.launchAppWithUrlString(copilotWithoutParams)
             }
-                    
+        } else {
+            if app.canNavigateByAddress() {
+                self.launchApp(app, withDirectionsToAddress: escapedAddress, fromMemory: fromMemory, completion: completion)
+            }else{
+                self.launchApp(app, withDirectionsToLocation: fallbackCoordinates, fromMemory: fromMemory, completion: completion)
+            }
         }
     }
 }
