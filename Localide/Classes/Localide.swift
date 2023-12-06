@@ -26,10 +26,10 @@ public final class Localide: NSObject {
     public var actionSheetTitleText: String?
     public var actionSheetMesaageText: String?
     public var actionSheetDismissText: String?
-    
-    
+
+
     public var subsetOfApps: [LocalideMapApp]?
-    
+
     // Unavailable initializer, use sharedManager.
     fileprivate override init() {
         super.init()
@@ -57,15 +57,20 @@ public final class Localide: NSObject {
     public func launchNativeAppleMapsAppForDirections(toLocation location: CLLocationCoordinate2D) -> Bool {
         return LocalideMapApp.appleMaps.launchAppWithDirections(toLocation: location)
     }
-    
+
     /**
      Prompt user for their preferred maps app, and launch it with directions to location
      - parameter location: Latitude & Longitude of the direction's to location
      - parameter rememberPreference: Whether to remember the user's preference for future uses or not. (note: preference is reset whenever the list of available apps change. ex. user installs a new map app.)
      - parameter completion: Called after attempting to launch app whether it being from previous preference or currently selected preference.
      */
-    public func promptForDirections(toLocation location: CLLocationCoordinate2D, rememberPreference remember: Bool = false, presentingViewController: UIViewController, onCompletion completion: LocalideUsageCompletion?) {
-        
+    public func promptForDirections(
+        toLocation location: CLLocationCoordinate2D,
+        rememberPreference remember: Bool = false,
+        presentingViewController: UIViewController,
+        customUrlsPerApp: [LocalideMapApp: String],
+        onCompletion completion: LocalideUsageCompletion?
+    ) {
         var appChoices = self.availableMapApps
         if let subsetOfApps = self.subsetOfApps {
             appChoices = subsetOfApps.filter({ self.availableMapApps.contains($0) })
@@ -76,7 +81,7 @@ public final class Localide: NSObject {
 
         guard !remember || !UserDefaults.didSetPrefferedMapApp(fromChoices: appChoices) else {
             let preferredMapApp = UserDefaults.preferredMapApp(fromChoices: appChoices)!
-            self.launchApp(preferredMapApp, withDirectionsToLocation: location, fromMemory: true, completion: completion)
+            launchApp(preferredMapApp, customUrlsPerApp: customUrlsPerApp, coordinates: location, fromMemory: true, completion: completion)
             return
         }
 
@@ -84,7 +89,7 @@ public final class Localide: NSObject {
             if remember {
                 UserDefaults.setPreferredMapApp(app, fromMapAppChoices: appChoices)
             }
-            self.launchApp(app, withDirectionsToLocation: location, fromMemory: false, completion: completion)
+            self.launchApp(app, customUrlsPerApp: customUrlsPerApp, coordinates: location, fromMemory: false, completion: completion)
         }
     }
 
@@ -152,10 +157,28 @@ public final class Localide: NSObject {
             }
         } else {
             if app.canNavigateByAddress() {
-                self.launchApp(app, withDirectionsToAddress: escapedAddress, fromMemory: fromMemory, completion: completion)
+                launchApp(app, withDirectionsToAddress: escapedAddress, fromMemory: fromMemory, completion: completion)
             }else{
-                self.launchApp(app, withDirectionsToLocation: fallbackCoordinates, fromMemory: fromMemory, completion: completion)
+                launchApp(app, withDirectionsToLocation: fallbackCoordinates, fromMemory: fromMemory, completion: completion)
             }
+        }
+    }
+
+    private func launchApp(
+        _ app: LocalideMapApp,
+        customUrlsPerApp: [LocalideMapApp: String],
+        coordinates: CLLocationCoordinate2D,
+        fromMemory: Bool,
+        completion: LocalideUsageCompletion?
+    ) {
+        if app == .copilot {
+            if let urlString = customUrlsPerApp[.copilot] {
+                _ = LocalideMapApp.launchAppWithUrlString(urlString)
+            } else if let copilotWithoutParams = LocalideMapApp.prefixes[.copilot] {
+                _ = LocalideMapApp.launchAppWithUrlString(copilotWithoutParams)
+            }
+        } else {
+            launchApp(app, withDirectionsToLocation: coordinates, fromMemory: fromMemory, completion: completion)
         }
     }
 }
@@ -173,12 +196,12 @@ extension Localide {
         let didLaunchMapApp = app.launchAppWithDirections(toLocation: location)
         completion?(app, fromMemory, didLaunchMapApp)
     }
-    
+
     fileprivate func launchApp(_ app: LocalideMapApp, withDirectionsToAddress address: String, fromMemory: Bool, completion: LocalideUsageCompletion?) {
         let didLaunchMapApp = app.launchAppWithDirections(toAddress: address)
         completion?(app, fromMemory, didLaunchMapApp)
     }
-    
+
     fileprivate func discoverUserPreferenceOfMapApps(withTitle title: String, message: String, apps: [LocalideMapApp], presentingViewController: UIViewController, completion: @escaping (LocalideMapApp) -> Void) {
         guard apps.count > 1 else {
             if let app = apps.first {
@@ -186,15 +209,15 @@ extension Localide {
             }
             return
         }
-        
+
         let alertController = UIAlertController(title: title, message: message, preferredStyle: .actionSheet)
-        
+
         for app in apps {
             let alertAction = UIAlertAction.localideAction(withTitle: app.appName, style: .default, handler: { _ in completion(app) })
             alertAction.mockMapApp = app
             alertController.addAction(alertAction)
         }
-        
+
         let cancelAction = UIAlertAction(title: self.actionSheetDismissText ?? "Cancel", style: .cancel, handler: nil)
         alertController.addAction(cancelAction)
         presentingViewController.present(alertController, animated: true, completion: nil)
