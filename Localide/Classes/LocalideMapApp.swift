@@ -9,7 +9,7 @@
 import UIKit
 import CoreLocation
 
-@objc public enum LocalideMapApp: Int {
+@objc public enum LocalideMapApp: Int, CaseIterable {
     case appleMaps = 10
     case citymapper = 20
     case googleMaps = 30
@@ -40,7 +40,7 @@ import CoreLocation
         }
     }
 
-    static let AllMapApps: [LocalideMapApp] = [appleMaps, citymapper, googleMaps, navigon, transitApp, waze, yandexNavigator]
+    static let AllMapApps: [LocalideMapApp] = LocalideMapApp.allCases
 }
 
 // MARK: - Public Helpers
