@@ -150,9 +150,9 @@ public final class Localide: NSObject {
         completion: LocalideUsageCompletion?
     ) {
         if app == .copilot {
-            if let urlString = customUrlsPerApp[.copilot] {
+            if let urlString = customUrlsPerApp[app] {
                 _ = LocalideMapApp.launchAppWithUrlString(urlString)
-            } else if let copilotWithoutParams = LocalideMapApp.prefixes[.copilot] {
+            } else if let copilotWithoutParams = LocalideMapApp.prefixes[app] {
                 _ = LocalideMapApp.launchAppWithUrlString(copilotWithoutParams)
             }
         } else {
@@ -220,7 +220,10 @@ extension Localide {
 
         let cancelAction = UIAlertAction(title: self.actionSheetDismissText ?? "Cancel", style: .cancel, handler: nil)
         alertController.addAction(cancelAction)
-        presentingViewController.present(alertController, animated: true, completion: nil)
+        presentingViewController.present(alertController, animated: true, completion: {
+            print(">> \(UIApplication.topViewController())")  // TODO: *eldar* - incomplete -
+            print(">> ")  // TODO: *eldar* - incomplete -
+        })
     }
 }
 
@@ -230,5 +233,21 @@ extension String {
         var allowed = CharacterSet.alphanumerics
         allowed.insert(charactersIn: unreserved)
         return self.addingPercentEncoding(withAllowedCharacters: allowed)
+    }
+}
+
+// TODO: *eldar* - incomplete - remove
+extension UIApplication {
+    class func topViewController(base: UIViewController? = UIApplication.shared.keyWindow?.rootViewController) -> UIViewController? {
+        if let nav = base as? UINavigationController {
+            return topViewController(base: nav.visibleViewController)
+        }
+        if let tab = base as? UITabBarController, let selected = tab.selectedViewController {
+            return topViewController(base: selected)
+        }
+        if let presented = base?.presentedViewController {
+            return topViewController(base: presented)
+        }
+        return base
     }
 }

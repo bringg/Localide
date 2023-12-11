@@ -48,13 +48,19 @@ class ViewController: UIViewController {
         if self.promptSwitch.isOn {
 
             let promptFunction = {
-                Localide.sharedManager.promptForDirections(toLocation: location, rememberPreference: self.rememberSwitch.isOn, presentingViewController: self, onCompletion: { (usedApp, fromMemory, openedLinkSuccessfully) in
-                    if fromMemory {
-                        print("Localide used \(usedApp) from user's previous choice.")
-                    } else {
-                        print("Localide " + (openedLinkSuccessfully ? "opened" : "failed to open") + " \(usedApp)")
+                Localide.sharedManager.promptForDirections(
+                    toLocation: location,
+                    rememberPreference: self.rememberSwitch.isOn,
+                    presentingViewController: self,
+                    customUrlsPerApp: [:],
+                    onCompletion: { usedApp, fromMemory, openedLinkSuccessfully in
+                        if fromMemory {
+                            print("Localide used \(usedApp) from user's previous choice.")
+                        } else {
+                            print("Localide " + (openedLinkSuccessfully ? "opened" : "failed to open") + " \(usedApp)")
+                        }
                     }
-                })
+                )
             }
 
             if Localide.sharedManager.availableMapApps.count == 1 {
@@ -70,7 +76,7 @@ class ViewController: UIViewController {
             }
 
         } else {
-            
+
             let app = LocalideMapApp.allMapApps()[self.appChoiceSegmentControl.selectedSegmentIndex]
             if app.canOpenApp() {
                 app.launchAppWithDirections(toLocation: location)
