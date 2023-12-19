@@ -18,14 +18,21 @@ internal protocol UIApplicationProtocol {
 
 extension UIApplication: UIApplicationProtocol {}
 
-public final class Localide {
+public final class Localide: NSObject {
 
     public static let sharedManager: Localide = Localide()
     internal var applicationProtocol: UIApplicationProtocol = UIApplication.shared
 
-    // Unavailable initializer, use sharedManager.
-    fileprivate init() {
+    public var actionSheetTitleText: String?
+    public var actionSheetMesaageText: String?
+    public var actionSheetDismissText: String?
 
+
+    public var subsetOfApps: [LocalideMapApp]?
+
+    // Unavailable initializer, use sharedManager.
+    fileprivate override init() {
+        super.init()
     }
 
     /**
@@ -55,14 +62,18 @@ public final class Localide {
      Prompt user for their preferred maps app, and launch it with directions to location
      - parameter location: Latitude & Longitude of the direction's to location
      - parameter rememberPreference: Whether to remember the user's preference for future uses or not. (note: preference is reset whenever the list of available apps change. ex. user installs a new map app.)
-     - parameter usingASubsetOfApps: Handpicked subset of apps to use, use this parameter if you'd like to exclude some apps. (note: If none of which are available, Apple Maps will be fell back on.)
      - parameter completion: Called after attempting to launch app whether it being from previous preference or currently selected preference.
      */
-    public func promptForDirections(toLocation location: CLLocationCoordinate2D, rememberPreference remember: Bool = false, usingASubsetOfApps apps: [LocalideMapApp]? = nil, onCompletion completion: LocalideUsageCompletion?) {
-        
+    public func promptForDirections(
+        toLocation location: CLLocationCoordinate2D,
+        rememberPreference remember: Bool = false,
+        presentingViewController: UIViewController,
+        customUrlsPerApp: [LocalideMapApp: String],
+        onCompletion completion: LocalideUsageCompletion?
+    ) {
         var appChoices = self.availableMapApps
-        if let apps = apps {
-            appChoices = apps.filter({ self.availableMapApps.contains($0) })
+        if let subsetOfApps = self.subsetOfApps {
+            appChoices = subsetOfApps.filter({ self.availableMapApps.contains($0) })
             if appChoices.count == 0 {
                 appChoices = [.appleMaps]
             }
@@ -70,15 +81,104 @@ public final class Localide {
 
         guard !remember || !UserDefaults.didSetPrefferedMapApp(fromChoices: appChoices) else {
             let preferredMapApp = UserDefaults.preferredMapApp(fromChoices: appChoices)!
-            self.launchApp(preferredMapApp, withDirectionsToLocation: location, fromMemory: true, completion: completion)
+            launchApp(preferredMapApp, customUrlsPerApp: customUrlsPerApp, coordinates: location, fromMemory: true, completion: completion)
             return
         }
 
-        self.discoverUserPreferenceOfMapApps("Navigation", message: "Which app would you like to use for directions?", apps: appChoices) { app in
+        self.discoverUserPreferenceOfMapApps(withTitle: self.actionSheetTitleText ?? "Navigation", message: self.actionSheetMesaageText ?? "Which app would you like to use for directions?", apps: appChoices, presentingViewController: presentingViewController) { app in
             if remember {
                 UserDefaults.setPreferredMapApp(app, fromMapAppChoices: appChoices)
             }
-            self.launchApp(app, withDirectionsToLocation: location, fromMemory: false, completion: completion)
+            self.launchApp(app, customUrlsPerApp: customUrlsPerApp, coordinates: location, fromMemory: false, completion: completion)
+        }
+    }
+
+    public func promptForDirections(
+        toAddress address: String,
+        fallbackCoordinates: CLLocationCoordinate2D,
+        rememberPreference remember: Bool = false,
+        presentingViewController: UIViewController,
+        customUrlsPerApp: [LocalideMapApp: String],
+        onCompletion completion: LocalideUsageCompletion?
+    ) {
+        var appChoices = self.availableMapApps
+        if let subsetOfApps = self.subsetOfApps {
+            appChoices = subsetOfApps.filter({ self.availableMapApps.contains($0) })
+            if appChoices.count == 0 {
+                appChoices = [.appleMaps]
+            }
+        }
+
+        // for navigation by address we need to escape the address (if we cant we will just replace spaces with +)
+        let escapedAddress = address.stringByAddingPercentEncodingForRFC3986() ?? address.replacingOccurrences(of: " ", with: "+")
+
+        // some map apps currently dont support navigation by address - in this case fallback to "by-location" navigation
+        guard !remember || !UserDefaults.didSetPrefferedMapApp(fromChoices: appChoices) else {
+            let preferredMapApp = UserDefaults.preferredMapApp(fromChoices: appChoices)!
+            self.launchApp(
+                preferredMapApp,
+                customUrlsPerApp: customUrlsPerApp,
+                escapedAddress: escapedAddress,
+                fallbackCoordinates: fallbackCoordinates,
+                fromMemory: true,
+                completion: completion
+            )
+            return
+        }
+
+        self.discoverUserPreferenceOfMapApps(withTitle: self.actionSheetTitleText ?? "Navigation", message: self.actionSheetMesaageText ?? "Which app would you like to use for directions?", apps: appChoices, presentingViewController: presentingViewController) { app in
+            if remember {
+                UserDefaults.setPreferredMapApp(app, fromMapAppChoices: appChoices)
+            }
+            self.launchApp(
+                app,
+                customUrlsPerApp: customUrlsPerApp,
+                escapedAddress: escapedAddress,
+                fallbackCoordinates: fallbackCoordinates,
+                fromMemory: false,
+                completion: completion
+            )
+        }
+    }
+
+    private func launchApp(
+        _ app: LocalideMapApp,
+        customUrlsPerApp: [LocalideMapApp: String],
+        escapedAddress: String,
+        fallbackCoordinates: CLLocationCoordinate2D,
+        fromMemory: Bool,
+        completion: LocalideUsageCompletion?
+    ) {
+        if app == .copilot {
+            if let urlString = customUrlsPerApp[app] {
+                _ = LocalideMapApp.launchAppWithUrlString(urlString)
+            } else if let copilotWithoutParams = LocalideMapApp.prefixes[app] {
+                _ = LocalideMapApp.launchAppWithUrlString(copilotWithoutParams)
+            }
+        } else {
+            if app.canNavigateByAddress() {
+                launchApp(app, withDirectionsToAddress: escapedAddress, fromMemory: fromMemory, completion: completion)
+            }else{
+                launchApp(app, withDirectionsToLocation: fallbackCoordinates, fromMemory: fromMemory, completion: completion)
+            }
+        }
+    }
+
+    private func launchApp(
+        _ app: LocalideMapApp,
+        customUrlsPerApp: [LocalideMapApp: String],
+        coordinates: CLLocationCoordinate2D,
+        fromMemory: Bool,
+        completion: LocalideUsageCompletion?
+    ) {
+        if app == .copilot {
+            if let urlString = customUrlsPerApp[.copilot] {
+                _ = LocalideMapApp.launchAppWithUrlString(urlString)
+            } else if let copilotWithoutParams = LocalideMapApp.prefixes[.copilot] {
+                _ = LocalideMapApp.launchAppWithUrlString(copilotWithoutParams)
+            }
+        } else {
+            launchApp(app, withDirectionsToLocation: coordinates, fromMemory: fromMemory, completion: completion)
         }
     }
 }
@@ -87,7 +187,7 @@ public final class Localide {
 extension Localide {
 
     fileprivate class func installedMapApps() -> [LocalideMapApp] {
-        return LocalideMapApp.AllMapApps.flatMap({ mapApp in
+        return LocalideMapApp.AllMapApps.compactMap({ mapApp in
             return mapApp.canOpenApp() ? mapApp : nil
         })
     }
@@ -97,7 +197,12 @@ extension Localide {
         completion?(app, fromMemory, didLaunchMapApp)
     }
 
-    fileprivate func discoverUserPreferenceOfMapApps(_ title: String, message: String, apps: [LocalideMapApp], completion: @escaping (LocalideMapApp) -> Void) {
+    fileprivate func launchApp(_ app: LocalideMapApp, withDirectionsToAddress address: String, fromMemory: Bool, completion: LocalideUsageCompletion?) {
+        let didLaunchMapApp = app.launchAppWithDirections(toAddress: address)
+        completion?(app, fromMemory, didLaunchMapApp)
+    }
+
+    fileprivate func discoverUserPreferenceOfMapApps(withTitle title: String, message: String, apps: [LocalideMapApp], presentingViewController: UIViewController, completion: @escaping (LocalideMapApp) -> Void) {
         guard apps.count > 1 else {
             if let app = apps.first {
                 completion(app)
@@ -105,17 +210,25 @@ extension Localide {
             return
         }
 
-        let alertController = UIAlertController(title: title, message: message, preferredStyle: UIAlertControllerStyle.actionSheet)
+        let alertController = UIAlertController(title: title, message: message, preferredStyle: .actionSheet)
 
         for app in apps {
-            let alertAction = UIAlertAction.localideAction(withTitle: app.appName, style: UIAlertActionStyle.default, handler: { _ in completion(app) })
+            let alertAction = UIAlertAction.localideAction(withTitle: app.appName, style: .default, handler: { _ in completion(app) })
             alertAction.mockMapApp = app
             alertController.addAction(alertAction)
         }
 
-        let cancelAction = UIAlertAction(title: "Cancel", style: UIAlertActionStyle.cancel, handler: nil)
+        let cancelAction = UIAlertAction(title: self.actionSheetDismissText ?? "Cancel", style: .cancel, handler: nil)
         alertController.addAction(cancelAction)
+        presentingViewController.present(alertController, animated: true)
+    }
+}
 
-        UIApplication.topViewController()?.present(alertController, animated: true, completion: nil)
+extension String {
+    func stringByAddingPercentEncodingForRFC3986() -> String? {
+        let unreserved = "-._~/?"
+        var allowed = CharacterSet.alphanumerics
+        allowed.insert(charactersIn: unreserved)
+        return self.addingPercentEncoding(withAllowedCharacters: allowed)
     }
 }

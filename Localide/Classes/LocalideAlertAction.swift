@@ -14,7 +14,7 @@ class LocalideAlertAction: UIAlertAction {
 }
 
 extension UIAlertAction {
-    class func localideAction(withTitle title: String?, style: UIAlertActionStyle, handler: ((UIAlertAction) -> Void)?) -> LocalideAlertAction {
+    class func localideAction(withTitle title: String?, style: UIAlertAction.Style, handler: ((UIAlertAction) -> Void)?) -> LocalideAlertAction {
         let alertAction = LocalideAlertAction(title: title, style: style, handler: handler)
         alertAction.mockHandler = handler
         return alertAction
