@@ -40,7 +40,7 @@ public final class Localide: NSObject {
      - Apple Maps
      - Installed 3rd party apps which are supported by Localide and included in the QuerySchemes
     */
-    public lazy var availableMapApps: [LocalideMapApp] = Localide.installedMapApps()
+    public var availableMapApps: [LocalideMapApp] { Localide.installedMapApps() }
 
     /**
      Reset the previously set user's map app preference
