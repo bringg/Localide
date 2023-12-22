@@ -40,7 +40,7 @@ public final class Localide: NSObject {
      - Apple Maps
      - Installed 3rd party apps which are supported by Localide and included in the QuerySchemes
     */
-    public lazy var availableMapApps: [LocalideMapApp] = Localide.installedMapApps()
+    public var availableMapApps: [LocalideMapApp] { Localide.installedMapApps() }
 
     /**
      Reset the previously set user's map app preference
@@ -150,11 +150,13 @@ public final class Localide: NSObject {
         completion: LocalideUsageCompletion?
     ) {
         if app == .copilot {
+            var openStatus: Bool = false
             if let urlString = customUrlsPerApp[app] {
-                _ = LocalideMapApp.launchAppWithUrlString(urlString)
+                openStatus = LocalideMapApp.launchAppWithUrlString(urlString)
             } else if let copilotWithoutParams = LocalideMapApp.prefixes[app] {
-                _ = LocalideMapApp.launchAppWithUrlString(copilotWithoutParams)
+                openStatus = LocalideMapApp.launchAppWithUrlString(copilotWithoutParams)
             }
+            completion?(app, fromMemory, openStatus)
         } else {
             if app.canNavigateByAddress() {
                 launchApp(app, withDirectionsToAddress: escapedAddress, fromMemory: fromMemory, completion: completion)
@@ -172,11 +174,13 @@ public final class Localide: NSObject {
         completion: LocalideUsageCompletion?
     ) {
         if app == .copilot {
-            if let urlString = customUrlsPerApp[.copilot] {
-                _ = LocalideMapApp.launchAppWithUrlString(urlString)
-            } else if let copilotWithoutParams = LocalideMapApp.prefixes[.copilot] {
-                _ = LocalideMapApp.launchAppWithUrlString(copilotWithoutParams)
+            var openStatus: Bool = false
+            if let urlString = customUrlsPerApp[app] {
+                openStatus = LocalideMapApp.launchAppWithUrlString(urlString)
+            } else if let copilotWithoutParams = LocalideMapApp.prefixes[app] {
+                openStatus = LocalideMapApp.launchAppWithUrlString(copilotWithoutParams)
             }
+            completion?(app, fromMemory, openStatus)
         } else {
             launchApp(app, withDirectionsToLocation: coordinates, fromMemory: fromMemory, completion: completion)
         }
