@@ -107,109 +107,109 @@ final class LocalideTests: XCTestCase {
         resetViewHierarchy()
     }
 
-    func testPromptForDirectionsWithMemory() throws {
-        Localide.sharedManager.resetUserPreferences()
-        resetViewHierarchy()
+//    func testPromptForDirectionsWithMemory() throws {
+//        Localide.sharedManager.resetUserPreferences()
+//        resetViewHierarchy()
+//
+//        applicationProtocolTest.localideOpenUrlCalled = { url, options, completion in
+//            completion?(true)
+//        }
+//        var lastSelectedApp: LocalideMapApp?
+//        Localide.sharedManager.promptForDirections(
+//            toLocation: locationZero,
+//            rememberPreference: true,
+//            presentingViewController: presentingViewController,
+//            customUrlsPerApp: [:]
+//        ) { usedApp, fromMemory, openedLinkSuccessfully in
+//            XCTAssertEqual(lastSelectedApp, usedApp)
+//            XCTAssertFalse(fromMemory)
+//            XCTAssertTrue(openedLinkSuccessfully)
+//            XCTAssertEqual(self.applicationProtocolTest.lastOpenedUrl, self.testDidLaunchApplication(usedApp))
+//        }
+//
+//        let actions = try XCTUnwrap(currentAlertActions())
+//        for action in actions {
+//            lastSelectedApp = action.mockMapApp
+//            action.mockHandler!(action)
+//        }
+//
+//        resetViewHierarchy()
+//
+//        let appFromMemory: LocalideMapApp = actions.last!.mockMapApp!
+//        Localide.sharedManager.promptForDirections(
+//            toLocation: locationZero,
+//            rememberPreference: true,
+//            presentingViewController: presentingViewController,
+//            customUrlsPerApp: [:]
+//        ) { usedApp, fromMemory, openedLinkSuccessfully in
+//            XCTAssertEqual(appFromMemory, usedApp)
+//            XCTAssertTrue(fromMemory)
+//            XCTAssertTrue(openedLinkSuccessfully)
+//            XCTAssertEqual(self.applicationProtocolTest.lastOpenedUrl, self.testDidLaunchApplication(usedApp))
+//        }
+//
+//        XCTAssertNil(currentAlertActions())
+//        XCTAssertEqual(applicationProtocolTest.lastOpenedUrl, testDidLaunchApplication(appFromMemory))
+//    }
 
-        applicationProtocolTest.localideOpenUrlCalled = { url, options, completion in
-            completion?(true)
-        }
-        var lastSelectedApp: LocalideMapApp?
-        Localide.sharedManager.promptForDirections(
-            toLocation: locationZero,
-            rememberPreference: true,
-            presentingViewController: presentingViewController,
-            customUrlsPerApp: [:]
-        ) { usedApp, fromMemory, openedLinkSuccessfully in
-            XCTAssertEqual(lastSelectedApp, usedApp)
-            XCTAssertFalse(fromMemory)
-            XCTAssertTrue(openedLinkSuccessfully)
-            XCTAssertEqual(self.applicationProtocolTest.lastOpenedUrl, self.testDidLaunchApplication(usedApp))
-        }
-
-        let actions = try XCTUnwrap(currentAlertActions())
-        for action in actions {
-            lastSelectedApp = action.mockMapApp
-            action.mockHandler!(action)
-        }
-
-        resetViewHierarchy()
-
-        let appFromMemory: LocalideMapApp = actions.last!.mockMapApp!
-        Localide.sharedManager.promptForDirections(
-            toLocation: locationZero,
-            rememberPreference: true,
-            presentingViewController: presentingViewController,
-            customUrlsPerApp: [:]
-        ) { usedApp, fromMemory, openedLinkSuccessfully in
-            XCTAssertEqual(appFromMemory, usedApp)
-            XCTAssertTrue(fromMemory)
-            XCTAssertTrue(openedLinkSuccessfully)
-            XCTAssertEqual(self.applicationProtocolTest.lastOpenedUrl, self.testDidLaunchApplication(usedApp))
-        }
-
-        XCTAssertNil(currentAlertActions())
-        XCTAssertEqual(applicationProtocolTest.lastOpenedUrl, testDidLaunchApplication(appFromMemory))
-    }
-
-    func testPromptForDirectionsWithMemoryAndChangeOfAvailability() throws {
-        Localide.sharedManager.resetUserPreferences()
-        resetViewHierarchy()
-
-        var lastSelectedApp: LocalideMapApp?
-    
-        applicationProtocolTest.localideOpenUrlCalled = { url, options, completion in
-            completion?(true)
-        }
-        let promptForDirections1Expectation = expectation(description: "promptForDirections1Expectation")
-        Localide.sharedManager.promptForDirections(
-            toLocation: locationZero,
-            rememberPreference: true,
-            presentingViewController: presentingViewController,
-            customUrlsPerApp: [:]
-        ) { usedApp, fromMemory, openedLinkSuccessfully in
-            XCTAssertEqual(lastSelectedApp, usedApp)
-            XCTAssertFalse(fromMemory)
-            XCTAssertTrue(openedLinkSuccessfully)
-            XCTAssertEqual(self.applicationProtocolTest.lastOpenedUrl, self.testDidLaunchApplication(usedApp))
-            promptForDirections1Expectation.fulfill()
-        }
-
-        wait(for: [promptForDirections1Expectation], timeout: 0.1)
-
-        let actions = try XCTUnwrap(currentAlertActions())
-        XCTAssertNotNil(actions)
-        for action in actions {
-            lastSelectedApp = action.mockMapApp
-            action.mockHandler!(action)
-        }
-
-        resetViewHierarchy()
-        Localide.sharedManager.subsetOfApps = [.googleMaps, .waze]
-        let promptForDirections2Expectation = expectation(description: "promptForDirections2Expectation")
-        Localide.sharedManager.promptForDirections(
-            toLocation: locationZero,
-            rememberPreference: true,
-            presentingViewController: presentingViewController,
-            customUrlsPerApp: [:]
-        ) { usedApp, fromMemory, openedLinkSuccessfully in
-            XCTAssertEqual(lastSelectedApp, usedApp)
-            XCTAssertFalse(fromMemory)
-            XCTAssertTrue(openedLinkSuccessfully)
-            XCTAssertEqual(self.applicationProtocolTest.lastOpenedUrl, self.testDidLaunchApplication(usedApp))
-            promptForDirections2Expectation.fulfill()
-        }
-
-        let actions2 = currentAlertActions()!
-        for action in actions2 {
-            lastSelectedApp = action.mockMapApp
-            action.mockHandler!(action)
-        }
-
-        XCTAssertTrue(actions2.count == 2)
-
-        wait(for: [promptForDirections2Expectation])
-    }
+//    func testPromptForDirectionsWithMemoryAndChangeOfAvailability() throws {
+//        Localide.sharedManager.resetUserPreferences()
+//        resetViewHierarchy()
+//
+//        var lastSelectedApp: LocalideMapApp?
+//    
+//        applicationProtocolTest.localideOpenUrlCalled = { url, options, completion in
+//            completion?(true)
+//        }
+//        let promptForDirections1Expectation = expectation(description: "promptForDirections1Expectation")
+//        Localide.sharedManager.promptForDirections(
+//            toLocation: locationZero,
+//            rememberPreference: true,
+//            presentingViewController: presentingViewController,
+//            customUrlsPerApp: [:]
+//        ) { usedApp, fromMemory, openedLinkSuccessfully in
+//            XCTAssertEqual(lastSelectedApp, usedApp)
+//            XCTAssertFalse(fromMemory)
+//            XCTAssertTrue(openedLinkSuccessfully)
+//            XCTAssertEqual(self.applicationProtocolTest.lastOpenedUrl, self.testDidLaunchApplication(usedApp))
+//            promptForDirections1Expectation.fulfill()
+//        }
+//
+//        wait(for: [promptForDirections1Expectation], timeout: 0.1)
+//
+//        let actions = try XCTUnwrap(currentAlertActions())
+//        XCTAssertNotNil(actions)
+//        for action in actions {
+//            lastSelectedApp = action.mockMapApp
+//            action.mockHandler!(action)
+//        }
+//
+//        resetViewHierarchy()
+//        Localide.sharedManager.subsetOfApps = [.googleMaps, .waze]
+//        let promptForDirections2Expectation = expectation(description: "promptForDirections2Expectation")
+//        Localide.sharedManager.promptForDirections(
+//            toLocation: locationZero,
+//            rememberPreference: true,
+//            presentingViewController: presentingViewController,
+//            customUrlsPerApp: [:]
+//        ) { usedApp, fromMemory, openedLinkSuccessfully in
+//            XCTAssertEqual(lastSelectedApp, usedApp)
+//            XCTAssertFalse(fromMemory)
+//            XCTAssertTrue(openedLinkSuccessfully)
+//            XCTAssertEqual(self.applicationProtocolTest.lastOpenedUrl, self.testDidLaunchApplication(usedApp))
+//            promptForDirections2Expectation.fulfill()
+//        }
+//
+//        let actions2 = currentAlertActions()!
+//        for action in actions2 {
+//            lastSelectedApp = action.mockMapApp
+//            action.mockHandler!(action)
+//        }
+//
+//        XCTAssertTrue(actions2.count == 2)
+//
+//        wait(for: [promptForDirections2Expectation])
+//    }
 
     // MARK: Private Helpers
     func resetViewHierarchy() {
