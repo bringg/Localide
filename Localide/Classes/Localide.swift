@@ -12,11 +12,19 @@ import CoreLocation
 public typealias LocalideUsageCompletion = (_ usedApp: LocalideMapApp, _ fromMemory: Bool, _ openedLinkSuccessfully: Bool) -> Void
 
 internal protocol UIApplicationProtocol {
-    func openURL(_ url: URL) -> Bool
+    func localideOpen(
+        _ url: URL,
+        options: [UIApplication.OpenExternalURLOptionsKey : Any],
+        completionHandler completion: ((Bool) -> Void)?
+    )
     func canOpenURL(_ url: URL) -> Bool
 }
 
-extension UIApplication: UIApplicationProtocol {}
+extension UIApplication: UIApplicationProtocol {
+    func localideOpen(_ url: URL, options: [OpenExternalURLOptionsKey : Any], completionHandler completion: ((Bool) -> Void)?) {
+        open(url, options: options, completionHandler: completion)
+    }
+}
 
 public final class Localide: NSObject {
 
@@ -54,8 +62,8 @@ public final class Localide: NSObject {
      - parameter location: Latitude & Longitude of the directions's TO location
      - returns: Whether the launch of the application was successfull
      */
-    public func launchNativeAppleMapsAppForDirections(toLocation location: CLLocationCoordinate2D) -> Bool {
-        return LocalideMapApp.appleMaps.launchAppWithDirections(toLocation: location)
+    public func launchNativeAppleMapsAppForDirections(toLocation location: CLLocationCoordinate2D, completionHandler: ((Bool) -> Void)?) {
+        LocalideMapApp.appleMaps.launchAppWithDirections(toLocation: location, completionHandler: completionHandler)
     }
 
     /**
@@ -150,13 +158,14 @@ public final class Localide: NSObject {
         completion: LocalideUsageCompletion?
     ) {
         if app == .copilot {
-            var openStatus: Bool = false
             if let urlString = customUrlsPerApp[app] {
-                openStatus = LocalideMapApp.launchAppWithUrlString(urlString)
+                LocalideMapApp.launchAppWithUrlString(urlString) { success in
+                    completion?(app, fromMemory, success)
+                }
             } else if let copilotWithoutParams = LocalideMapApp.prefixes[app] {
-                openStatus = LocalideMapApp.launchAppWithUrlString(copilotWithoutParams)
+                LocalideMapApp.launchAppWithUrlString(copilotWithoutParams) { success in
+                    completion?(app, fromMemory, success)}
             }
-            completion?(app, fromMemory, openStatus)
         } else {
             if app.canNavigateByAddress() {
                 launchApp(app, withDirectionsToAddress: escapedAddress, fromMemory: fromMemory, completion: completion)
@@ -174,13 +183,15 @@ public final class Localide: NSObject {
         completion: LocalideUsageCompletion?
     ) {
         if app == .copilot {
-            var openStatus: Bool = false
             if let urlString = customUrlsPerApp[app] {
-                openStatus = LocalideMapApp.launchAppWithUrlString(urlString)
+                LocalideMapApp.launchAppWithUrlString(urlString) { success in
+                    completion?(app, fromMemory, success)
+                }
             } else if let copilotWithoutParams = LocalideMapApp.prefixes[app] {
-                openStatus = LocalideMapApp.launchAppWithUrlString(copilotWithoutParams)
+                LocalideMapApp.launchAppWithUrlString(copilotWithoutParams) { success in
+                    completion?(app, fromMemory, success)
+                }
             }
-            completion?(app, fromMemory, openStatus)
         } else {
             launchApp(app, withDirectionsToLocation: coordinates, fromMemory: fromMemory, completion: completion)
         }
@@ -197,13 +208,15 @@ extension Localide {
     }
 
     fileprivate func launchApp(_ app: LocalideMapApp, withDirectionsToLocation location: CLLocationCoordinate2D, fromMemory: Bool, completion: LocalideUsageCompletion?) {
-        let didLaunchMapApp = app.launchAppWithDirections(toLocation: location)
-        completion?(app, fromMemory, didLaunchMapApp)
+        app.launchAppWithDirections(toLocation: location) { success in
+            completion?(app, fromMemory, success)
+        }
     }
 
     fileprivate func launchApp(_ app: LocalideMapApp, withDirectionsToAddress address: String, fromMemory: Bool, completion: LocalideUsageCompletion?) {
-        let didLaunchMapApp = app.launchAppWithDirections(toAddress: address)
-        completion?(app, fromMemory, didLaunchMapApp)
+        app.launchAppWithDirections(toAddress: address) { success in
+            completion?(app, fromMemory, success)
+        }
     }
 
     fileprivate func discoverUserPreferenceOfMapApps(withTitle title: String, message: String, apps: [LocalideMapApp], presentingViewController: UIViewController, completion: @escaping (LocalideMapApp) -> Void) {

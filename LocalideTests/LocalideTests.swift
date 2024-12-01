@@ -27,32 +27,52 @@ final class LocalideTests: XCTestCase {
     }
 
     func testLaunchNativeAppleMapsApp() {
-
         let location = CLLocationCoordinate2D(latitude: 0.0, longitude: 0.0)
-        XCTAssertTrue(Localide.sharedManager.launchNativeAppleMapsAppForDirections(toLocation: location))
+        let completionExpectation = expectation(description: "Completion called")
+        applicationProtocolTest.localideOpenUrlCalled = { url, options, completion in
+            XCTAssertEqual(url.absoluteString, "http://maps.apple.com/?daddr=0.000000,0.000000")
+            completion?(true)
+        }
+        Localide.sharedManager.launchNativeAppleMapsAppForDirections(toLocation: location) { success in
+            XCTAssertTrue(success)
+            completionExpectation.fulfill()
+        }
+        wait(for: [completionExpectation], timeout: 0.1)
         XCTAssertEqual(applicationProtocolTest.lastOpenedUrl, testDidLaunchApplication(.appleMaps))
     }
 
     func testPromptForDirectionsNoOptions() {
         Localide.sharedManager.subsetOfApps = []
+        let completionExpectation = expectation(description: "Completion called")
+        applicationProtocolTest.localideOpenUrlCalled = { url, options, completion in
+            completion?(true)
+            completionExpectation.fulfill()
+        }
         Localide.sharedManager.promptForDirections(toLocation: locationZero, presentingViewController: UIViewController(), customUrlsPerApp: [:]) { (usedApp, fromMemory, openedLinkSuccessfully) in
             XCTAssertEqual(LocalideMapApp.appleMaps, usedApp)
             XCTAssertFalse(fromMemory)
             XCTAssertTrue(openedLinkSuccessfully)
             XCTAssertEqual(self.applicationProtocolTest.lastOpenedUrl, self.testDidLaunchApplication(usedApp))
         }
+        wait(for: [completionExpectation], timeout: 0.1)
         XCTAssertNil(currentAlertActions())
         XCTAssertEqual(applicationProtocolTest.lastOpenedUrl, testDidLaunchApplication(.appleMaps))
     }
 
     func testPromptForDirectionsOneOption() {
         Localide.sharedManager.subsetOfApps = [.googleMaps]
+        let completionExpectation = expectation(description: "Completion called")
+        applicationProtocolTest.localideOpenUrlCalled = { url, options, completion in
+            completion?(true)
+            completionExpectation.fulfill()
+        }
         Localide.sharedManager.promptForDirections(toLocation: locationZero, presentingViewController: UIViewController(), customUrlsPerApp: [:]) { (usedApp, fromMemory, openedLinkSuccessfully) in
             XCTAssertEqual(LocalideMapApp.googleMaps, usedApp)
             XCTAssertFalse(fromMemory)
             XCTAssertTrue(openedLinkSuccessfully)
             XCTAssertEqual(self.applicationProtocolTest.lastOpenedUrl, self.testDidLaunchApplication(usedApp))
         }
+        wait(for: [completionExpectation], timeout: 0.1)
         XCTAssertNil(currentAlertActions())
         XCTAssertEqual(applicationProtocolTest.lastOpenedUrl, testDidLaunchApplication(.googleMaps))
     }
@@ -74,8 +94,14 @@ final class LocalideTests: XCTestCase {
 
         let actions = currentAlertActions()!
         for action in actions {
+            let applicationOpenUrlCalled = expectation(description: "Application - open url")
+            applicationProtocolTest.localideOpenUrlCalled = { url, options, completionHandler in
+                applicationOpenUrlCalled.fulfill()
+                completionHandler?(true)
+            }
             lastSelectedApp = action.mockMapApp
             action.mockHandler!(action)
+            wait(for: [applicationOpenUrlCalled], timeout: 1)
         }
 
         resetViewHierarchy()
@@ -85,6 +111,9 @@ final class LocalideTests: XCTestCase {
         Localide.sharedManager.resetUserPreferences()
         resetViewHierarchy()
 
+        applicationProtocolTest.localideOpenUrlCalled = { url, options, completion in
+            completion?(true)
+        }
         var lastSelectedApp: LocalideMapApp?
         Localide.sharedManager.promptForDirections(
             toLocation: locationZero,
@@ -128,6 +157,10 @@ final class LocalideTests: XCTestCase {
         resetViewHierarchy()
 
         var lastSelectedApp: LocalideMapApp?
+    
+        applicationProtocolTest.localideOpenUrlCalled = { url, options, completion in
+            completion?(true)
+        }
         let promptForDirections1Expectation = expectation(description: "promptForDirections1Expectation")
         Localide.sharedManager.promptForDirections(
             toLocation: locationZero,
@@ -142,7 +175,7 @@ final class LocalideTests: XCTestCase {
             promptForDirections1Expectation.fulfill()
         }
 
-        wait(for: [promptForDirections1Expectation])
+        wait(for: [promptForDirections1Expectation], timeout: 0.1)
 
         let actions = try XCTUnwrap(currentAlertActions())
         XCTAssertNotNil(actions)
@@ -153,6 +186,7 @@ final class LocalideTests: XCTestCase {
 
         resetViewHierarchy()
         Localide.sharedManager.subsetOfApps = [.googleMaps, .waze]
+        let promptForDirections2Expectation = expectation(description: "promptForDirections2Expectation")
         Localide.sharedManager.promptForDirections(
             toLocation: locationZero,
             rememberPreference: true,
@@ -163,6 +197,7 @@ final class LocalideTests: XCTestCase {
             XCTAssertFalse(fromMemory)
             XCTAssertTrue(openedLinkSuccessfully)
             XCTAssertEqual(self.applicationProtocolTest.lastOpenedUrl, self.testDidLaunchApplication(usedApp))
+            promptForDirections2Expectation.fulfill()
         }
 
         let actions2 = currentAlertActions()!
@@ -173,7 +208,7 @@ final class LocalideTests: XCTestCase {
 
         XCTAssertTrue(actions2.count == 2)
 
-        wait(for: [promptForDirections1Expectation])
+        wait(for: [promptForDirections2Expectation])
     }
 
     // MARK: Private Helpers
@@ -227,9 +262,15 @@ private class UIApplicationProtocolTest: UIApplicationProtocol {
     func canOpenURL(_ url: URL) -> Bool {
         return true
     }
-    func openURL(_ url: URL) -> Bool {
+    
+    var localideOpenUrlCalled: ((URL, [UIApplication.OpenExternalURLOptionsKey : Any], ((Bool) -> Void)?) -> Void)?
+    func localideOpen(_ url: URL, options: [UIApplication.OpenExternalURLOptionsKey : Any], completionHandler completion: ((Bool) -> Void)?) {
         lastOpenedUrl = url.absoluteString
-        return canOpenURL(url)
+        guard let localideOpenUrlCalled else {
+            XCTFail("localideOpenUrlCalled should be set")
+            return
+        }
+        localideOpenUrlCalled(url, options, completion)
     }
 }
 

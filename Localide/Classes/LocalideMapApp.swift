@@ -66,16 +66,16 @@ public extension LocalideMapApp {
      Launch app
      - returns: Whether the launch of the application was successful
      */
-    func launchApp(byCoordinates:Bool = true) -> Bool {
+    func launchApp(byCoordinates:Bool = true, completionHandler: ((Bool) -> Void)? = nil) {
         
         if byCoordinates {
-            return LocalideMapApp.launchAppWithUrlString(LocalideMapApp.urlFormats[self]!)
+            LocalideMapApp.launchAppWithUrlString(LocalideMapApp.urlFormats[self]!, completionHandler: completionHandler)
         }else{
             // not all map apps can launch by address so fallback to normal url formats
             if let format = LocalideMapApp.addressUrlFormats[self] {
-                return LocalideMapApp.launchAppWithUrlString(format)
+                LocalideMapApp.launchAppWithUrlString(format, completionHandler: completionHandler)
             }else{
-                return LocalideMapApp.launchAppWithUrlString(LocalideMapApp.urlFormats[self]!)
+                LocalideMapApp.launchAppWithUrlString(LocalideMapApp.urlFormats[self]!, completionHandler: completionHandler)
             }
         }
         
@@ -84,24 +84,27 @@ public extension LocalideMapApp {
     /**
      Launch app with directions to location
      - parameter location: Latitude & Longitude of the directions's TO location
-     - returns: Whether the launch of the application was successfull
      */
-    @discardableResult func launchAppWithDirections(toLocation location: CLLocationCoordinate2D) -> Bool {
-        return LocalideMapApp.launchAppWithUrlString(urlStringForDirections(toLocation: location))
+    func launchAppWithDirections(toLocation location: CLLocationCoordinate2D, completionHandler: ((Bool) -> Void)? = nil) {
+        LocalideMapApp.launchAppWithUrlString(urlStringForDirections(toLocation: location), completionHandler: completionHandler)
     }
     
     
-    @discardableResult func launchAppWithDirections(toAddress address: String) -> Bool {
+    func launchAppWithDirections(toAddress address: String, completionHandler: ((Bool) -> Void)? = nil) {
         let urlstring = urlStringForDirections(toAddress: address)
         if urlstring.isEmpty {
-            return false
+            completionHandler?(false)
+            return
         }
-        return LocalideMapApp.launchAppWithUrlString(urlstring)
+        LocalideMapApp.launchAppWithUrlString(urlstring, completionHandler: completionHandler)
     }
 
-    static func launchAppWithUrlString(_ urlString: String) -> Bool {
-        guard let launchUrl = URL(string: urlString) , canOpenUrl(launchUrl) else { return false }
-        return Localide.sharedManager.applicationProtocol.openURL(launchUrl)
+    static func launchAppWithUrlString(_ urlString: String, completionHandler: ((Bool) -> Void)? = nil) {
+        guard let launchUrl = URL(string: urlString) , canOpenUrl(launchUrl) else {
+            completionHandler?(false)
+            return
+        }
+        Localide.sharedManager.applicationProtocol.localideOpen(launchUrl, options: [:], completionHandler: completionHandler)
     }
 
     static let prefixes: [LocalideMapApp: String] = [
