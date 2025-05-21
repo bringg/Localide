@@ -80,7 +80,7 @@ public final class Localide: NSObject {
      - parameter location: Latitude & Longitude of the directions's TO location
      - returns: Whether the launch of the application was successfull
      */
-    public func launchNativeAppleMapsAppForDirections(toLocation location: CLLocationCoordinate2D, iosDisableAppleMapsLaunchFix: Bool, completionHandler: ((Bool) -> Void)?) {
+    public func launchNativeAppleMapsAppForDirections(toLocation location: CLLocationCoordinate2D, completionHandler: ((Bool) -> Void)?) {
         LocalideMapApp.appleMaps.launchAppWithDirections(
             toLocation: location,
             completionHandler: completionHandler
