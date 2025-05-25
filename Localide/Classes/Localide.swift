@@ -22,7 +22,21 @@ internal protocol UIApplicationProtocol {
 
 extension UIApplication: UIApplicationProtocol {
     func localideOpen(_ url: URL, options: [OpenExternalURLOptionsKey : Any], completionHandler completion: ((Bool) -> Void)?) {
-        open(url, options: options, completionHandler: completion)
+        if url.absoluteString.starts(with: LocalideUrlStringAppleMaps.prefixesNew.rawValue) {
+            if UIApplication.shared.canOpenURL(url) {
+                open(url, options: options, completionHandler: completion)
+            } else {
+                // Fallback to the web version
+                let webURLString = url.absoluteString.replacingOccurrences(of: LocalideUrlStringAppleMaps.prefixesNew.rawValue, with: LocalideUrlStringAppleMaps.prefixesOld.rawValue)
+                if let webURL = URL(string: webURLString) {
+                    open(webURL, options: options, completionHandler: completion)
+                } else {
+                    print("❌ Unable to create fallback web URL.")
+                }
+            }
+        } else {
+            open(url, options: options, completionHandler: completion)
+        }
     }
 }
 
@@ -63,7 +77,10 @@ public final class Localide: NSObject {
      - returns: Whether the launch of the application was successfull
      */
     public func launchNativeAppleMapsAppForDirections(toLocation location: CLLocationCoordinate2D, completionHandler: ((Bool) -> Void)?) {
-        LocalideMapApp.appleMaps.launchAppWithDirections(toLocation: location, completionHandler: completionHandler)
+        LocalideMapApp.appleMaps.launchAppWithDirections(
+            toLocation: location,
+            completionHandler: completionHandler
+        )
     }
 
     /**
