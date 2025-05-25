@@ -28,6 +28,7 @@
 		<string>transit</string>
 		<string>waze</string>
 		<string>yandexnavi</string>
+		<string>maps</string>
 	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>

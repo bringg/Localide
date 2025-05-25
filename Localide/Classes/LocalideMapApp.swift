@@ -111,8 +111,8 @@ public extension LocalideMapApp {
         Localide.sharedManager.applicationProtocol.localideOpen(launchUrl, options: [:], completionHandler: completionHandler)
     }
     
-    static func setupForAppleMapsFix(iosDisableAppleMapsLaunchFix: Bool) {
-        if iosDisableAppleMapsLaunchFix {
+    static func setupForAppleMapsFix(shouldUseAppleMapsHttpUrlScheme: Bool) {
+        if shouldUseAppleMapsHttpUrlScheme {
             LocalideMapApp.prefixes[.appleMaps] = LocalideUrlStringAppleMaps.prefixesOld.rawValue
             LocalideMapApp.urlFormats[.appleMaps] = "http://maps.apple.com/?daddr=%f,%f"
             LocalideMapApp.addressUrlFormats[.appleMaps] = "http://maps.apple.com/?daddr=%@"
