@@ -118,8 +118,8 @@ public extension LocalideMapApp {
             LocalideMapApp.addressUrlFormats[.appleMaps] = "http://maps.apple.com/?daddr=%@"
         } else {
             LocalideMapApp.prefixes[.appleMaps] = LocalideUrlStringAppleMaps.prefixesNew.rawValue
-            LocalideMapApp.urlFormats[.appleMaps] = "maps://daddr=%f,%f"
-            LocalideMapApp.addressUrlFormats[.appleMaps] = "maps://daddr=%@"
+            LocalideMapApp.urlFormats[.appleMaps] = "maps://?daddr=%f,%f"
+            LocalideMapApp.addressUrlFormats[.appleMaps] = "maps://?daddr=%@"
         }
     }
 
