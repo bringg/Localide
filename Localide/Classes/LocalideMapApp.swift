@@ -43,6 +43,11 @@ import CoreLocation
     static let AllMapApps: [LocalideMapApp] = LocalideMapApp.allCases
 }
 
+public enum LocalideUrlStringAppleMaps: String {
+    case prefixesOld = "http://maps.apple.com/"
+    case prefixesNew = "maps://"
+}
+
 // MARK: - Public Helpers
 public extension LocalideMapApp {
     /**
@@ -79,7 +84,6 @@ public extension LocalideMapApp {
             }
         }
         
-        
     }
     /**
      Launch app with directions to location
@@ -106,9 +110,21 @@ public extension LocalideMapApp {
         }
         Localide.sharedManager.applicationProtocol.localideOpen(launchUrl, options: [:], completionHandler: completionHandler)
     }
+    
+    static func setupForAppleMapsFix(iosDisableAppleMapsLaunchFix: Bool) {
+        if iosDisableAppleMapsLaunchFix {
+            LocalideMapApp.prefixes[.appleMaps] = LocalideUrlStringAppleMaps.prefixesOld.rawValue
+            LocalideMapApp.urlFormats[.appleMaps] = "http://maps.apple.com/?daddr=%f,%f"
+            LocalideMapApp.addressUrlFormats[.appleMaps] = "http://maps.apple.com/?daddr=%@"
+        } else {
+            LocalideMapApp.prefixes[.appleMaps] = LocalideUrlStringAppleMaps.prefixesNew.rawValue
+            LocalideMapApp.urlFormats[.appleMaps] = "maps://daddr=%f,%f"
+            LocalideMapApp.addressUrlFormats[.appleMaps] = "maps://daddr=%@"
+        }
+    }
 
-    static let prefixes: [LocalideMapApp: String] = [
-        LocalideMapApp.appleMaps : "http://maps.apple.com/",
+    static var prefixes: [LocalideMapApp: String] = [
+        LocalideMapApp.appleMaps : "maps://",
         LocalideMapApp.citymapper : "citymapper://",
         LocalideMapApp.googleMaps : "comgooglemaps://",
         LocalideMapApp.navigon : "navigon://",
@@ -139,7 +155,7 @@ private extension LocalideMapApp {
 // MARK: - Private Static Helpers
 private extension LocalideMapApp {
 
-    static let urlFormats: [LocalideMapApp: String] = [
+    static var urlFormats: [LocalideMapApp: String] = [
         LocalideMapApp.appleMaps : "http://maps.apple.com/?daddr=%f,%f",
         LocalideMapApp.citymapper : "citymapper://endcoord=%f,%f",
         LocalideMapApp.googleMaps : "comgooglemaps://?daddr=%f,%f",
@@ -149,7 +165,7 @@ private extension LocalideMapApp {
         LocalideMapApp.yandexNavigator : "yandexnavi://build_route_on_map?lat_to=%f&lon_to=%f"
     ]
     
-    static let addressUrlFormats: [LocalideMapApp: String] = [
+    static var addressUrlFormats: [LocalideMapApp: String] = [
         LocalideMapApp.appleMaps : "http://maps.apple.com/?daddr=%@",
         LocalideMapApp.citymapper : "citymapper://endaddress=%@",
         LocalideMapApp.googleMaps : "comgooglemaps://?daddr=%@&directionsmode=driving",
